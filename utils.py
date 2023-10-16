@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, mean_squared_error
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.stats.stattools import jarque_bera
-from statsmodels.tsa.stattools import kpss,adfuller
+from statsmodels.tsa.stattools import kpss,adfuller, zivot_andrews
 from statsmodels.stats.diagnostic import acorr_ljungbox
 
 import torch
@@ -97,7 +97,7 @@ def adf_test(y_vector):
     labels = ['None', 'Constant', 'Constant/Trend']  # Labels for regression types
 
     for regression_type, label in zip(regression_types, labels):
-        adf_test = adfuller(y_vector, regression=regression_type, autolag='BIC')
+        adf_test = adfuller(y_vector, regression=regression_type, autolag='BIC', maxlag=20)
         print('-------------{}--------------'.format(label))
         print(f'ADF Statistic:{adf_test[0]}')
         print(f'p-value: {adf_test[1]}')
@@ -122,6 +122,23 @@ def kpss_test(y_vector):
         print(f'Used Lags: {kpss_test[2]}')
         print(f'Critical Values: {kpss_test[3]}')
         if kpss_test[0] < kpss_test[3].get('5%'): 
+            print('--> Stationary')
+        else:
+            print('--> Non-Stationary')
+            
+def zivot_andrews_test(y_vector):
+    
+    regression_types = ['c', 'ct']  # List of regression types
+    labels = ['Constant', 'Constant/Trend']  # Labels for regression types
+
+    for regression_type, label in zip(regression_types, labels):
+        zv_test = zivot_andrews(y_vector, regression=regression_type, autolag='BIC')
+        print('-------------{}--------------'.format(label))
+        print(f'Zivot-Andrews Statistic:{kpss_test[0]}')
+        print(f'p-value: {kpss_test[1]}')
+        print(f'Used Lags: {kpss_test[2]}')
+        print(f'Critical Values: {kpss_test[3]}')
+        if zv_test[0] < zv_test[3].get('5%'): 
             print('--> Stationary')
         else:
             print('--> Non-Stationary')
